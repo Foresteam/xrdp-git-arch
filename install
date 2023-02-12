@@ -1,0 +1,37 @@
+#!/bin/bash
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+BLUE='\033[0;34m'
+RESET='\033[0m'
+
+NUMCPUS=`grep -c '^processor' /proc/cpuinfo`
+
+echo -e "$BLUE COMPILING XRDP $RESET"
+if (cd xrdp ; NUMCPUS=$NUMCPUS bash ../c_xrdp.sh); then
+	echo -e "$GREEN SUCCESS $RESET"
+else
+	echo -e "$RED FAIL $RESET"
+	exit 1
+fi
+echo -e "$YELLOW INSTALLING XRDP $RESET"
+(cd xrdp; make install)
+
+echo -e "$BLUE COMPILING XORGXRDP $RESET"
+if (cd xorgxrdp ; NUMCPUS=$NUMCPUS bash ../c_xorgxrdp.sh); then
+	echo -e "$GREEN SUCCESS $RESET"
+else
+	echo -e "$RED FAIL $RESET"
+	exit 1
+fi
+echo -e "$YELLOW INSTALLING XORGXRDP $RESET"
+(cd xorgxrdp; make install)
+
+echo -e "$YELLOW PATCHING CONFIGS $RESET"
+cp sesman.ini /etc/xrdp
+cp xrdp.ini /etc/xrdp
+cp xrdp_keyboard.ini /etc/xrdp
+cp startwm.sh /etc/xrdp
+
+echo -e "$GREEN Done $RESET"
